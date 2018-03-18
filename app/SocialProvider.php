@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class SocialProvider extends Model
 {
-	protected $fillable = ["provider_id","provider"];
+	protected $fillable = ["provider_id","provider","user_id"];
 
     public function user()
     {
-    	$this->belongsTo(User::class);
+    	return $this->belongsTo(User::class);
     }
 }

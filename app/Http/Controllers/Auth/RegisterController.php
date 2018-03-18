@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\SocialProvider;
 use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -85,9 +86,43 @@ public function redirectToProvider($provider)
      */
     public function handleProviderCallback($provider)
     {
-        $user = Socialite::driver($provider)->user();
+        try{
+        $userinfo = Socialite::driver($provider)->user();
 
-        dd($user);
+        }catch (\Exception $exception){
+            return redirect('/');
+        }
+
+        $socialProvider = SocialProvider::where('provider_id', $userinfo->getId())->first();
+
+        if (!$socialProvider){
+            $user = User::firstOrCreate([
+            'email' => $userinfo->getEmail(),
+            'name' => $userinfo->getName()
+
+            ]);
+
+            $user->socialProviders()->create([
+                'user_id' => $user->id,
+                'provider_id' => $userinfo->getId(),
+                'provider' => $provider
+            ]);
+
+
+            auth()->login($user);
+            return redirect('/home');
+
+        }else{
+            $userlogin = $socialProvider->user;
+            auth()->login($userlogin);
+            return redirect('/home');
+        }
+
+
+//        dd($user);
+
+
+
     }
 
 
